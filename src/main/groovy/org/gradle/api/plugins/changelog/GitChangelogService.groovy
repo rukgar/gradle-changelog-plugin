@@ -4,10 +4,18 @@ class GitChangelogService {
     def GIT_LOG_CMD         = 'git log --grep="%s" -E --format=%s %s..%s'
     def GIT_NOTAG_LOG_CMD   = 'git log --grep="%s" -E --format=%s'
     def GIT_TAG_CMD         = 'git describe --tags --abbrev=0'
-    def HEADER_TPL          = '<a name="%s">%s</a>\n# %s %s (%s)\n\n'
     def EMPTY_COMPONENT     = '$$'
 
     def project
+
+    static def titleTemplate = '\n#### <%= title %>\n\n'
+    static def headerTemplate = '<a name="<%= version %>"></a>\\n<%= versionText %> (<%= date %>)\n\n'
+    static def componentTemplate = '* **<%= name %>:**'
+    static def versionTemplate = '## <%= version %><%= subtitle ? (" " + subtitle) : "" %>'
+    static def listItemTemplate = '<%= prefix %> <%= commitSubject %> (<%= commitLink %><%= closes ? (", closes " + closes) : "" %>)\n'
+    static def patchVersionTemplate = '### <%= version %><%= subtitle ? (" " + subtitle) : "" %>'
+    static def issueTemplate = '${repository ? "[$issue]($repository/issues/$issue)" : "#$issue"}'
+    static def commitTemplate = '${repository ? "[$commit]($repository/commits/$commit)" : "#$commit"}'
 
     GitChangelogService(project){
         this.project = project
@@ -150,7 +158,14 @@ class GitChangelogService {
         def b = new byte [fw.length()]
         fw.read(b)
         fw.seek(0)
-        fw.write(String.format(HEADER_TPL, opts.version, opts.appName, opts.version, opts.versionText, currentDate()).bytes)
+        def binding = [
+                "version" : opts.version,
+                "date" : currentDate(),
+                "versionText" : versionText(opts.version, opts.subtitle)
+        ]
+        def template = engine.createTemplate(headerTemplate).make(binding)
+
+        fw.write(template.toString().bytes)
         printSection(opts, fw, 'Documentation', sections.docs)
         printSection(opts, fw, 'Bug Fixes', sections.fix)
         printSection(opts, fw, 'Features', sections.feat)
@@ -165,34 +180,44 @@ class GitChangelogService {
         fw.close()
     }
 
+    static def engine = new groovy.text.GStringTemplateEngine()
+
     def printSection(Map opts, RandomAccessFile fw, String title, Map section, boolean printCommitLinks = true) {
 
         if(section.isEmpty()) return;
         section.sort()
 
-        fw.write(String.format("\n## %s\n\n", title).bytes)
+        def binding = ["title" : title]
+        def template = engine.createTemplate(titleTemplate).make(binding)
+
+        fw.write(template.toString().bytes)
 
         section.each { c ->
-            def prefix = '-'
+            def prefix = '*'
             def nested = section["${c.key}"].size() > 1
 
             if (c.key != EMPTY_COMPONENT) {
+                binding = ["name" : c.key]
+                def componentText = engine.createTemplate(componentTemplate).make(binding)
                 if (nested) {
-                    fw.write(String.format("- **%s:**\n", c.key).bytes)
-                    prefix = '  -'
+                    fw.write((componentText.toString() + '\n').bytes)
+                    prefix = '  *'
                 } else {
-                    prefix = String.format("- **%s:**", c.key)
+                    prefix = componentText.toString()
                 }
             }
 
             section[c.key].each {commit ->
                 if (printCommitLinks) {
-                    fw.write(String.format("%s %s\n  (%s", prefix, commit.subject, linkToCommit("${commit.hash}", opts)).bytes)
 
-                    if (commit.closes.size()) {
-                        fw.write((",\n   " + commit.closes.collect().join(", ")).bytes)
-                    }
-                    fw.write(")\n".bytes)
+                    binding = [
+                            "prefix" : prefix,
+                            "commitSubject" : commit.subject,
+                            "commitLink" : linkToCommit(commit.hash, opts),
+                            "closes" : commit.closes.collect{linkToIssue(it, opts)}.join(", ")
+                    ]
+                    def commitText = engine.createTemplate(listItemTemplate).make(binding)
+                    fw.write(commitText.toString().bytes)
                 } else {
                     fw.write(String.format("%s %s", prefix, commit.subject).bytes)
                 }
@@ -201,8 +226,20 @@ class GitChangelogService {
         fw.write("\n".bytes)
     }
 
-    static def GString linkToCommit(String hash, Map opts) {
-        return "[${hash.substring(0,8)}](${opts.repoUrl}/commits/${hash})"
+    static def String linkToCommit(String hash, Map opts) {
+        def binding = [
+                "commit" : hash.substring(0,8),
+                "repository" : opts.repoUrl
+        ]
+        return engine.createTemplate(commitTemplate).make(binding).toString()
+    }
+
+    static def Closure linkToIssue(issue, Map opts) {
+        def binding = [
+                "issue" : issue,
+                "repository" : opts.repoUrl
+        ]
+        return engine.createTemplate(issueTemplate).make(binding).toString()
     }
 
     static def String currentDate() {
@@ -210,4 +247,16 @@ class GitChangelogService {
         return String.format('%tY/%<tm/%<td', c)
     }
 
+    static def String versionText( String version, String subtitle){
+        def isMajor = version.tokenize('.')[2] == '0';
+        def binding = [
+                "version" : version,
+                "subtitle" : subtitle
+        ]
+        if(isMajor){
+            return engine.createTemplate(versionTemplate).make(binding).toString()
+        }else{
+            return engine.createTemplate(patchVersionTemplate).make(binding).toString()
+        }
+    }
 }

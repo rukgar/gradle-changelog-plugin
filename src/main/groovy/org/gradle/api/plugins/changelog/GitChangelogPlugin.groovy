@@ -15,6 +15,7 @@ class GitChangelogPlugin implements Plugin<Project> {
 class ChangelogPluginExtension {
     String appName
     String file
+    String subtitle
     String versionNum
     String match
     String repoUrl

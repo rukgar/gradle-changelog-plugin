@@ -14,6 +14,7 @@ class GitChangelogTask extends DefaultTask {
 
         opts.file           = project.changelog.file ? project.changelog.file : "CHANGELOG.md"
         opts.version        = project.changelog.versionNum ? project.changelog.versionNum : ""
+        opts.subtitle       = project.changelog.subtitle ? project.changelog.subtitle : ""
         opts.versionText    = project.changelog.versionText ? "\"${project.changelog.versionText}\"" : ""
         opts.appName        = project.changelog.appName ? project.changelog.appName : ""
         opts.grep           = project.changelog.match ? project.changelog.match : "^fix|^feat|^fix|^perf|BREAKING"
