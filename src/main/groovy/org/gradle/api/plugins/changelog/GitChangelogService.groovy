@@ -8,12 +8,12 @@ class GitChangelogService {
 
     def project
 
-    static def titleTemplate = '\n#### <%= title %>\n\n'
+    static def titleTemplate = '\n## <%= title %>\n\n'
     static def headerTemplate = '<a name="<%= version %>"></a>\\n<%= versionText %> (<%= date %>)\n\n'
     static def componentTemplate = '* **<%= name %>:**'
     static def versionTemplate = '## <%= version %><%= subtitle ? (" " + subtitle) : "" %>'
     static def listItemTemplate = '<%= prefix %> <%= commitSubject %> (<%= commitLink %><%= closes ? (", closes " + closes) : "" %>)\n'
-    static def patchVersionTemplate = '### <%= version %><%= subtitle ? (" " + subtitle) : "" %>'
+    static def patchVersionTemplate = '# <%= version %><%= subtitle ? (" " + subtitle) : "" %>'
     static def issueTemplate = '${repository ? "[$issue]($repository/issues/$issue)" : "#$issue"}'
     static def commitTemplate = '${repository ? "[$commit]($repository/commits/$commit)" : "#$commit"}'
 
@@ -128,6 +128,7 @@ class GitChangelogService {
                 fix : [:],
                 feat: [:],
                 breaks: [:],
+                perf: [:],
                 style: [:],
                 refactor: [:],
                 test: [:],
@@ -169,6 +170,7 @@ class GitChangelogService {
         printSection(opts, fw, 'Documentation', sections.docs)
         printSection(opts, fw, 'Bug Fixes', sections.fix)
         printSection(opts, fw, 'Features', sections.feat)
+        printSection(opts, fw, 'Performance', sections.perf)
         printSection(opts, fw, 'Refactor', sections.refactor, false)
         printSection(opts, fw, 'Style', sections.style, false)
         printSection(opts, fw, 'Test', sections.test, false)
