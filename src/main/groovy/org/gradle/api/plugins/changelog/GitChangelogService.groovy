@@ -221,11 +221,10 @@ class GitChangelogService {
                     def commitText = engine.createTemplate(listItemTemplate).make(binding)
                     fw.write(commitText.toString().bytes)
                 } else {
-                    fw.write(String.format("%s %s", prefix, commit.subject).bytes)
+                    fw.write(String.format("%s %s\n", prefix, commit.subject).bytes)
                 }
             }
         }
-        fw.write("\n".bytes)
     }
 
     static def String linkToCommit(String hash, Map opts) {
