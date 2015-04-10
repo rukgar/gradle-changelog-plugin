@@ -1,10 +1,10 @@
 package org.gradle.api.plugins.changelog
 
 class GitChangelogService {
-    def GIT_LOG_CMD         = 'git log --grep="%s" -E --format=%s %s..%s'
-    def GIT_NOTAG_LOG_CMD   = 'git log --grep="%s" -E --format=%s'
-    def GIT_TAG_CMD         = 'git describe --tags --abbrev=0'
-    def EMPTY_COMPONENT     = '$$'
+    def GIT_LOG_CMD = 'git log --grep="%s" -E --format=%s %s..%s'
+    def GIT_NOTAG_LOG_CMD = 'git log --grep="%s" -E --format=%s'
+    def GIT_TAG_CMD = 'git describe --tags --abbrev=0'
+    def EMPTY_COMPONENT = '$$'
 
     def project
 
@@ -12,17 +12,18 @@ class GitChangelogService {
     static def headerTemplate = '<a name="<%= version %>"></a>\\n<%= versionText %> (<%= date %>)\n\n'
     static def componentTemplate = '* **<%= name %>:**'
     static def versionTemplate = '## <%= version %><%= subtitle ? (" " + subtitle) : "" %>'
-    static def listItemTemplate = '<%= prefix %> <%= commitSubject %> (<%= commitLink %><%= closes ? (", closes " + closes) : "" %>)\n'
+    static
+    def listItemTemplate = '<%= prefix %> <%= commitSubject %> (<%= commitLink %><%= closes ? (", closes " + closes) : "" %>)\n'
     static def patchVersionTemplate = '# <%= version %><%= subtitle ? (" " + subtitle) : "" %>'
-    static def issueTemplate = '${repository ? "[$issue]($repository/issues/$issue)" : "#$issue"}'
+    static def issueTemplate = '${repository ? "[#$issue]($repository/issues/$issue)" : "#$issue"}'
     static def commitTemplate = '${repository ? "[$commit]($repository/commits/$commit)" : "#$commit"}'
 
-    GitChangelogService(project){
+    GitChangelogService(project) {
         this.project = project
     }
 
-    static def LinkedHashMap parseRawCommit(String raw){
-        if(raw==null || raw.empty) {
+    static def LinkedHashMap parseRawCommit(String raw) {
+        if (raw == null || raw.empty) {
             return null
         }
         List<String> lines = raw.split("\n")
@@ -34,12 +35,11 @@ class GitChangelogService {
         msg.breaks = []
 
         //closes
-        lines.each {line ->
-            match = line =~ /(?:Closes|Fixes)\s#(\d+)/
-            if(match){
-                match[0] - match[0][1]
-                msg.closes.push(match[0][1])
+        if (lines.size() > 0) {
+            lines.each { line -> readCloses(line,msg)
             }
+        }else{
+                msg.subject = msg.subject - readCloses(msg.subject,msg)
         }
 
         //breaks
@@ -52,9 +52,9 @@ class GitChangelogService {
         match = msg.subject =~ /^(.*)\((.*)\):\s(.*)$/
 
         //parse subject
-        if(match.size() == 0){
+        if (match.size() == 0) {
             match = msg.subject =~ /^(.*):\s(.*)$/
-            if(!match){
+            if (!match) {
                 println "Incorrect message: ${msg.hash} ${msg.subject}"
                 return null;
             }
@@ -71,11 +71,29 @@ class GitChangelogService {
         return msg;
     }
 
-    def ArrayList readGitLog(grep, from = null, to = null){
+    static def String readCloses(String line, msg){
+        def match
+        match = line =~ /(?:Closes|Fixes|Resolves|closes|fixes|resolves)\s((?:#\d+(?:\,\s)?)+)/
+        if (match) {
+            println("match is ${match}")
+            match[0] - match[0][1]
+            List<String> issues = match[0][1].split(",")
+            if(issues.size()>0){
+                issues.each {issue -> msg.closes.push(issue.trim())}
+            }else{
+                msg.closes.push(match[0][1])
+            }
+            println("returning ${match[0][0]}")
+            return match[0][0]
+        }
+        return null
+    }
+
+    def ArrayList readGitLog(grep, from = null, to = null) {
         def cmd
-        if(from){
+        if (from) {
             cmd = String.format(GIT_LOG_CMD, grep, '%H%n%s%n%b%n==END==', from, to).split(" ")
-        }else{
+        } else {
             cmd = String.format(GIT_NOTAG_LOG_CMD, grep, '%H%n%s%n%b%n==END==').split(" ")
         }
         def out = new ByteArrayOutputStream()
@@ -94,7 +112,7 @@ class GitChangelogService {
         def commits = []
         for (int i = 0; i < arr.length; i++) {
             def commit = parseRawCommit(arr[i])
-            if(commit!=null) {
+            if (commit != null) {
                 commits.add(commit)
             }
         }
@@ -114,10 +132,10 @@ class GitChangelogService {
                 commandLine cmd
             }
 
-            standardOutput  out
+            standardOutput out
             errorOutput outError
         }
-        if(!outError.toString().replace("\n", "").isEmpty()){
+        if (!outError.toString().replace("\n", "").isEmpty()) {
             println "Cannot get the previous tag"
         }
         return out.toString().replace("\n", "")
@@ -125,20 +143,20 @@ class GitChangelogService {
 
     def writeChangelog(RandomAccessFile fw, List commits, Map opts) {
         def sections = [
-                fix : [:],
-                feat: [:],
-                breaks: [:],
-                perf: [:],
-                style: [:],
+                fix     : [:],
+                feat    : [:],
+                breaks  : [:],
+                perf    : [:],
+                style   : [:],
                 refactor: [:],
-                test: [:],
-                chore: [:],
-                docs: [:]
+                test    : [:],
+                chore   : [:],
+                docs    : [:]
         ]
 
         //sections.breaks[EMPTY_COMPONENT] = []
 
-        commits.each {c ->
+        commits.each { c ->
             def section = sections["${c.type}"]
             def component = c.component ? c.component : EMPTY_COMPONENT
 
@@ -150,19 +168,19 @@ class GitChangelogService {
             if (c.breaking != null) {
                 sections.breaks[component] = sections.breaks[component] ? sections.breaks[component] : []
                 sections.breaks[component].push([
-                        subject: "due to [${c.hash.substring(0,8)}](${opts.repoUrl}/commits/${c.hash}),\n ${c.breaking}",
-                        hash: c.hash,
-                        closes: []
+                        subject: "due to [${c.hash.substring(0, 8)}](${opts.repoUrl}/commits/${c.hash}),\n ${c.breaking}",
+                        hash   : c.hash,
+                        closes : []
                 ]);
             }
         }
-        def b = new byte [fw.length()]
+        def b = new byte[fw.length()]
         fw.read(b)
         fw.seek(0)
         def binding = [
-                "version" : opts.version,
-                "date" : currentDate(),
-                "versionText" : versionText(opts.version, opts.subtitle)
+                "version"    : opts.version,
+                "date"       : currentDate(),
+                "versionText": versionText(opts.version, opts.versionText)
         ]
         def template = engine.createTemplate(headerTemplate).make(binding)
 
@@ -186,10 +204,10 @@ class GitChangelogService {
 
     def printSection(Map opts, RandomAccessFile fw, String title, Map section, boolean printCommitLinks = true) {
 
-        if(section.isEmpty()) return;
+        if (section.isEmpty()) return;
         section.sort()
 
-        def binding = ["title" : title]
+        def binding = ["title": title]
         def template = engine.createTemplate(titleTemplate).make(binding)
 
         fw.write(template.toString().bytes)
@@ -199,7 +217,7 @@ class GitChangelogService {
             def nested = section["${c.key}"].size() > 1
 
             if (c.key != EMPTY_COMPONENT) {
-                binding = ["name" : c.key]
+                binding = ["name": c.key]
                 def componentText = engine.createTemplate(componentTemplate).make(binding)
                 if (nested) {
                     fw.write((componentText.toString() + '\n').bytes)
@@ -209,14 +227,14 @@ class GitChangelogService {
                 }
             }
 
-            section[c.key].each {commit ->
+            section[c.key].each { commit ->
                 if (printCommitLinks) {
 
                     binding = [
-                            "prefix" : prefix,
-                            "commitSubject" : commit.subject,
-                            "commitLink" : linkToCommit(commit.hash, opts),
-                            "closes" : commit.closes.collect{linkToIssue(it, opts)}.join(", ")
+                            "prefix"       : prefix,
+                            "commitSubject": commit.subject,
+                            "commitLink"   : linkToCommit(commit.hash, opts),
+                            "closes"       : commit.closes.collect { linkToIssue(it, opts) }.join(", ")
                     ]
                     def commitText = engine.createTemplate(listItemTemplate).make(binding)
                     fw.write(commitText.toString().bytes)
@@ -229,16 +247,16 @@ class GitChangelogService {
 
     static def String linkToCommit(String hash, Map opts) {
         def binding = [
-                "commit" : hash.substring(0,8),
-                "repository" : opts.repoUrl
+                "commit"    : hash.substring(0, 8),
+                "repository": opts.repoUrl
         ]
         return engine.createTemplate(commitTemplate).make(binding).toString()
     }
 
-    static def Closure linkToIssue(issue, Map opts) {
+    static def String linkToIssue(issue, Map opts) {
         def binding = [
-                "issue" : issue,
-                "repository" : opts.repoUrl
+                "issue"     : issue.replaceAll('#',''),
+                "repository": opts.trackerUrl ? opts.trackerUrl : opts.repoUrl
         ]
         return engine.createTemplate(issueTemplate).make(binding).toString()
     }
@@ -248,15 +266,15 @@ class GitChangelogService {
         return String.format('%tY/%<tm/%<td', c)
     }
 
-    static def String versionText( String version, String subtitle){
+    static def String versionText(String version, String subtitle) {
         def isMajor = version.tokenize('.')[2] == '0';
         def binding = [
                 "version" : version,
-                "subtitle" : subtitle
+                "subtitle": subtitle
         ]
-        if(isMajor){
+        if (isMajor) {
             return engine.createTemplate(versionTemplate).make(binding).toString()
-        }else{
+        } else {
             return engine.createTemplate(patchVersionTemplate).make(binding).toString()
         }
     }
