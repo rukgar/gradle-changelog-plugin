@@ -1,23 +1,78 @@
-<a name="v0.1.2"></a>
-# v0.1.2  (2014/06/30)
-
-
-## Bug Fixes
-
-- **GitHubService:** project obj should be passed to service
-  ([cd0b3647](https://github.com/andresaraujo/gradle-changelog-plugin/commits/cd0b36479ba2c2408a999d77ffd168ccd012b22a))
-
-
-## Refactor
-
-- **GitChangelogTask:** separate logic in a service and add unit tests
-<a name="v0.1.1"></a>
-
-# v0.1.1  (2014/06/27)
+<a name="v0.1.3"></a>
+# v0.1.3 "Electric Lama" (2015/04/10)
 
 
 ## Features
 
-- **build:** add self changelog plugin
-  ([ab8505ca](https://github.com/andresaraujo/gradle-changelog-plugin/commits/ab8505ca840be3f2053e9ecd1b8ccc1be7dbb1df))
+* added suppor of version name with param subtitle ([572d0dd7](https://github.com/marcpoppleton/gradle-changelog-plugin/commits/572d0dd7))
+* **build:** add self changelog plugin ([ab8505ca](https://github.com/marcpoppleton/gradle-changelog-plugin/commits/ab8505ca))
 
+## Refactor
+
+* etracted string templates out methods
+* **GitChangelogTask:** separate logic ina service and add unit tests
+<a name="v0.1.3"></a>
+# v0.1.3 "Electric Lama" (2015/04/10)
+
+
+## Features
+
+* added suppor of version name with param subtitle ([572d0dd7](https://github.com/marcpoppleton/gradle-changelog-plugin/commits/572d0dd7))
+* **build:** add self changelog plugin ([ab8505ca](https://github.com/marcpoppleton/gradle-changelog-plugin/commits/ab8505ca))
+
+## Refactor
+
+* etracted string templates out methods
+* **GitChangelogTask:** separate logic ina service and add unit tests
+<a name="v0.1.3"></a>
+# v0.1.3 "Electric Lama" (2015/04/10)
+
+
+## Features
+
+* added suppor of version name with param subtitle ([572d0dd7](https://github.com/marcpoppleton/gradle-changelog-plugin/commits/572d0dd7))
+* **build:** add self changelog plugin ([ab8505ca](https://github.com/marcpoppleton/gradle-changelog-plugin/commits/ab8505ca))
+
+## Refactor
+
+* etracted string templates out methods
+* **GitChangelogTask:** separate logic ina service and add unit tests
+<a name="v0.1.3"></a>
+# v0.1.3 "Electric Lama" (2015/04/10)
+
+
+## Features
+
+* added suppor of version name with param subtitle ([572d0dd7](https://github.com/marcpoppleton/gradle-changelog-plugin/commits/572d0dd7))
+* **build:** add self changelog plugin ([ab8505ca](https://github.com/marcpoppleton/gradle-changelog-plugin/commits/ab8505ca))
+
+## Refactor
+
+* etracted string templates out methods
+* **GitChangelogTask:** separate logic ina service and add unit tests
+<a name="v0.1.3"></a>
+# v0.1.3 "Electric Lama" (2015/04/10)
+
+
+## Features
+
+* added suppor of version name with param subtitle ([572d0dd7](https://github.com/marcpoppleton/gradle-changelog-plugin/commits/572d0dd7))
+* **build:** add self changelog plugin ([ab8505ca](https://github.com/marcpoppleton/gradle-changelog-plugin/commits/ab8505ca))
+
+## Refactor
+
+* etracted string templates out methods
+* **GitChangelogTask:** separate logic ina service and add unit tests
+<a name="v0.1.3"></a>
+# v0.1.3 "Electric Lama" (2015/04/10)
+
+
+## Features
+
+* added suppor of version name with param subtitle ([572d0dd7](https://github.com/marcpoppleton/gradle-changelog-plugin/commits/572d0dd7))
+* **build:** add self changelog plugin ([ab8505ca](https://github.com/marcpoppleton/gradle-changelog-plugin/commits/ab8505ca))
+
+## Refactor
+
+* etracted string templates out methods
+* **GitChangelogTask:** separate logic ina service and add unit tests
