@@ -1,8 +1,6 @@
 buildscript {
     repositories {
         [
-                'http://dl.bintray.com/andresaraujo/gradle-plugins',
-                'http://jcenter.bintray.com',
                 '../repo'
         ].each { repo ->
             maven { url repo }
@@ -10,17 +8,16 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:0.3'
-        classpath group: 'io.github.marcpoppleton.changelog', name: 'git-changelog', version: '0.1.3'
+        classpath group: 'com.github.marcpoppleton', name: 'git-changelog', version: '0.1.3'
     }
 }
-
+apply plugin: 'maven'
+apply plugin: 'signing'
 apply plugin: 'groovy'
 apply plugin: 'maven-publish'
-apply plugin: 'bintray'
 apply plugin: 'changelog'
 
-group = 'io.github.marcpoppleton.changelog'
+group = 'com.github.marcpoppleton'
 version = '0.1.3'
 
 repositories {
@@ -43,7 +40,7 @@ jar {
     manifest {
         attributes 'Implementation-Title': 'Gradle Changelog plugin',
                 'Implementation-Version': version,
-                'Built-By': System.getProperty('user.name'),
+                'Built-By': 'Marc Poppleton',
                 'Built-Date': new Date(),
                 'Built-JDK': System.getProperty('java.version'),
                 'Built-Gradle': gradle.gradleVersion
@@ -60,9 +57,19 @@ task groovydocJar(type: Jar, dependsOn: groovydoc) {
     from groovydoc.destinationDir
 }
 
+task javadocJar(type: Jar, dependsOn:javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
 artifacts {
     archives sourcesJar
     archives groovydocJar
+    archives javadocJar
+}
+
+signing {
+    sign configurations.archives
 }
 
 publishing {
@@ -99,24 +106,56 @@ publishing {
     }
 }
 
-bintray {
-    user = project.hasProperty('bintrayUser') ? project.getProperty('bintrayUser') : ""
-    key = project.hasProperty('bintrayKey') ? project.getProperty('bintrayKey') : ""
-    publications = ['mavenJava']
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
 
-    pkg {
-        repo = 'gradle-plugins'
-        name = 'gradle-changelog-plugin'
-        licenses = ['Apache-2.0']
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            pom.project {
+                name 'Gradle Changelog plugin'
+                packaging 'jar'
+                // optionally artifactId can be defined here
+                description 'Gradle plugin for generating changelog from commit logs. Forked from Andres Araujos plugin'
+                url 'https://github.com/marcpoppleton/gradle-changelog-plugin'
+
+                scm {
+                    connection 'scm:git:https://github.com/marcpoppleton/gradle-changelog-plugin.git'
+                    developerConnection 'scm:git:https://github.com/marcpoppleton/gradle-changelog-plugin.git'
+                    url 'https://github.com/marcpoppleton/gradle-changelog-plugin.git'
+                }
+
+                licenses {
+                    license {
+                        name 'The Apache License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'marcpoppleton'
+                        name 'Marc Poppleton'
+                        email 'marc.poppleton@gmail.com'
+                    }
+                }
+            }
+        }
     }
-
-    //dryRun = true
 }
+
 
 changelog {
     file "CHANGELOG.md"
     versionNum "v$project.version"
-    subtitle "Electric Lama"
+    versionText "Electric Lama"
     repoUrl "https://github.com/marcpoppleton/gradle-changelog-plugin"
     match "^fix|^feat|^fix|^perf|^refactor|BREAKING"
 
