@@ -39,13 +39,13 @@ changelog {
     versionNum “0.1.3” //Defaults to an empty string.
     
     //version name
-    versionText "Electric Lama” //Defaults to an empty string.
+    versionText ”Electric Lama” //Defaults to an empty string.
     
     //URL of the repository where the commits can be found. Plugin will append /commits at the end.    
-    repoUrl "https://github.com/marcpoppleton/gradle-changelog-plugin“ //Defaults to an empty string.
+    repoUrl ”https://github.com/marcpoppleton/gradle-changelog-plugin“ //Defaults to an empty string.
     
     //URL of the bug tracker where closed issues can be found. Plugin will append /issues at the end.
-    trackerUrl "https://github.com/marcpoppleton/gradle-changelog-plugin“ //Defaults to an empty string.
+    trackerUrl ”https://github.com/marcpoppleton/gradle-changelog-plugin“ //Defaults to an empty string.
     
     //lower limit to filter the git log command
     from “0.0.1“ //Defaults to previous git tag found or first commit if none found.
@@ -54,7 +54,7 @@ changelog {
     to “HEAD” //Defaults to HEAD.
     
     //regex used to filter the conventional changelog commits for this changelog
-    match "^fix|^feat|^fix|^perf|^refactor|BREAKING” //Defaults to the value in the example.
+    match ”^fix|^feat|^fix|^perf|^refactor|BREAKING” //Defaults to the value in the example.
 } 
 ```
 
