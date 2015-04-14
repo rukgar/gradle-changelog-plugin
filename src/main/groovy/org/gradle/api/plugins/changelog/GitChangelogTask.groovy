@@ -21,6 +21,7 @@ class GitChangelogTask extends DefaultTask {
         opts.trackerUrl     = project.changelog.trackerUrl ? project.changelog.trackerUrl : ""
         opts.from           = project.changelog.from ? project.changelog.from : service.getPreviousTag()
         opts.to             = project.changelog.to ? project.changelog.to : "HEAD"
+        opts.append         = project.changelog.append ? project.changelog.append : "true"
         commits = opts.from ? service.readGitLog(opts.grep, opts.from, opts.to) : service.readGitLog(opts.grep)
 
         println "Parsed ${commits.size()} commits"

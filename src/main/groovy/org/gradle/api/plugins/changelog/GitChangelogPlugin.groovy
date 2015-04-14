@@ -22,4 +22,5 @@ class ChangelogPluginExtension {
     String versionText
     String from
     String to
+    String append
 }

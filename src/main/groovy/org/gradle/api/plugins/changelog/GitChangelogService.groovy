@@ -175,7 +175,8 @@ class GitChangelogService {
             }
         }
         def b = new byte[fw.length()]
-        fw.read(b)
+        println("Appending? ${opts.append}")
+        if(opts.append.toBoolean()) fw.read(b)
         fw.seek(0)
         def binding = [
                 "version"    : opts.version,
