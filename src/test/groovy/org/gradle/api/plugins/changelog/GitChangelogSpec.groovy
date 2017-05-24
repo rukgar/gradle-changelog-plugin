@@ -33,8 +33,8 @@ class GitChangelogSpec extends Specification {
     def "should parse closed issues"(){
         expect:
         commit.closes != null
-        commit.closes[0] == '123'
-        commit.closes[1] == '25'
+        commit.closes[0] == '#123'
+        commit.closes[1] == '#25'
 
         where:
         service = new GitChangelogService(null)
