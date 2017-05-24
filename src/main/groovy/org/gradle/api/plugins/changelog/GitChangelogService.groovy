@@ -100,7 +100,7 @@ class GitChangelogService {
         println "DEBUG(cmd): ${cmd.join(" ")}"
         def res = project.exec {
             if (System.properties['os.name'].toLowerCase().contains('windows')) {
-                commandLine 'cmd', '/c', cmd
+                commandLine 'cmd', '/c', "${cmd.join(" ")}"
             } else {
                 commandLine cmd
             }
@@ -127,7 +127,7 @@ class GitChangelogService {
         project.exec {
             ignoreExitValue true
             if (System.properties['os.name'].toLowerCase().contains('windows')) {
-                commandLine 'cmd', '/c', cmd
+                commandLine 'cmd', '/c',  "${cmd.join(" ")}"
             } else {
                 commandLine cmd
             }
@@ -176,10 +176,11 @@ class GitChangelogService {
         }
         def b = new byte[fw.length()]
         println("Appending? ${opts.append}")
+        println("Appending? ${opts.version}")
         if(opts.append.toBoolean()) fw.read(b)
         fw.seek(0)
         def binding = [
-                "version"    : opts.version,
+                "version"    : "${opts.version}",
                 "date"       : currentDate(),
                 "versionText": versionText(opts.version, opts.versionText)
         ]
