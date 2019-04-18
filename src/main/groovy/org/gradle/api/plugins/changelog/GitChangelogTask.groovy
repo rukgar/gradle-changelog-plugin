@@ -13,8 +13,6 @@ class GitChangelogTask extends DefaultTask {
         def opts = [:]
 
         opts.file           = project.changelog.file ? project.changelog.file : "CHANGELOG.md"
-        opts.version        = project.changelog.versionNum ? project.changelog.versionNum : ""
-        opts.versionText    = project.changelog.versionText ? "\"${project.changelog.versionText}\"" : ""
         opts.appName        = project.changelog.appName ? project.changelog.appName : ""
         opts.grep           = project.changelog.match ? project.changelog.match : "^fix|^feat|^fix|^perf|^refactor|BREAKING"
         opts.repoUrl        = project.changelog.repoUrl ? project.changelog.repoUrl : ""
@@ -23,6 +21,8 @@ class GitChangelogTask extends DefaultTask {
         opts.to             = project.changelog.to ? project.changelog.to : "HEAD"
         opts.append         = project.changelog.append ? project.changelog.append : "true"
         commits = opts.from ? service.readGitLog(opts.grep, opts.from, opts.to) : service.readGitLog(opts.grep)
+        opts.version        = project.changelog.versionNum ? project.changelog.versionNum : service.getNextVersionNumber(commits)
+        opts.versionText    = project.changelog.versionText ? "\"${project.changelog.versionText}\"" : ""
 
         println "Parsed ${commits.size()} commits"
         println "Generating changelog to ${opts.file} ( ${opts.version} )"
