@@ -36,7 +36,7 @@ changelog {
     appName “gradle-changelog-plugin” //Defaults to an empty string.
     
     //version number for this changelog
-    versionNum “0.1.3” //Defaults to an empty string.
+    versionNum “0.1.3” //Guesses next version using commits content and defaults to an empty string.
     
     //version name
     versionText “Electric Lama” //Defaults to an empty string.
@@ -75,6 +75,14 @@ changelog {
     limitations under the License.
 
 ## Changelog
+
+<a name="v0.2.0"></a>
+## v0.2.0 (2019/04/18)
+
+
+## Features
+
+* Improves previous tag detection by searching latest tagged commit across all branches. New logic for guessing next version using conventional commits tags present. ([9ce3e04d](https://github.com/marcpoppleton/gradle-changelog-plugin/commits/9ce3e04d))
 
 <a name="v0.1.3"></a>
 ## v0.1.3 "Electric Lama" (2015/04/14)
