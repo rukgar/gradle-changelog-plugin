@@ -3,10 +3,13 @@ package org.gradle.api.plugins.changelog
 class GitChangelogService {
     def GIT_LOG_CMD = 'git log --grep="%s" -E --format=%s %s..%s'
     def GIT_NOTAG_LOG_CMD = 'git log --grep="%s" -E --format=%s'
-    def GIT_TAG_CMD = 'git describe --tags --abbrev=0'
+    def GIT_TAG_CMD = 'git describe --tags %s'
+    def GIT_REV_TAG_CMD = 'git rev-list --tags --max-count=1'
     def EMPTY_COMPONENT = '$$'
 
     def project
+    def previousTag
+    def previousTagRevision
 
     static def titleTemplate = '\n## <%= title %>\n\n'
     static def headerTemplate = '<a name="<%= version %>"></a>\\n<%= versionText %> (<%= date %>)\n\n'
@@ -120,7 +123,11 @@ class GitChangelogService {
     }
 
     def getPreviousTag() {
-        def cmd = GIT_TAG_CMD.split(" ")
+        if (previousTag != null) {
+            return previousTag
+        }
+        def gitTagCommand = String.format(GIT_TAG_CMD, getPreviousTagRevision())
+        def cmd = gitTagCommand.split(" ")
         def out = new ByteArrayOutputStream()
         def outError = new ByteArrayOutputStream()
 
@@ -136,9 +143,39 @@ class GitChangelogService {
             errorOutput outError
         }
         if (!outError.toString().replace("\n", "").isEmpty()) {
-            println "Cannot get the previous tag"
+            println "Cannot get the previous tag: " + outError.toString()
         }
-        return out.toString().replace("\n", "")
+
+        previousTag = out.toString().replace("\n", "")
+        return previousTag
+    }
+
+    def getPreviousTagRevision() {
+        if (previousTagRevision != null) {
+            return previousTagRevision
+        }
+
+        def cmd = GIT_REV_TAG_CMD.split(" ")
+        def out = new ByteArrayOutputStream()
+        def outError = new ByteArrayOutputStream()
+
+        project.exec {
+            ignoreExitValue true
+            if (System.properties['os.name'].toLowerCase().contains('windows')) {
+                commandLine 'cmd', '/c', "${cmd.join(" ")}"
+            } else {
+                commandLine cmd
+            }
+
+            standardOutput out
+            errorOutput outError
+        }
+        if (!outError.toString().replace("\n", "").isEmpty()) {
+            println "Cannot get the previous tag revision: " + outError.toString()
+        }
+
+        previousTagRevision = out.toString().replace("\n", "")
+        return previousTagRevision
     }
 
     def writeChangelog(RandomAccessFile fw, List commits, Map opts) {
@@ -153,8 +190,6 @@ class GitChangelogService {
                 chore   : [:],
                 docs    : [:]
         ]
-
-        //sections.breaks[EMPTY_COMPONENT] = []
 
         commits.each { c ->
             def section = sections["${c.type}"]
@@ -244,6 +279,37 @@ class GitChangelogService {
                     fw.write(String.format("%s %s\n", prefix, commit.subject).bytes)
                 }
             }
+        }
+    }
+
+    def getNextVersionNumber(List commits) {
+        if (previousTag == null) {
+            previousTag = getPreviousTag()
+        }
+
+        SemanticVersion previousTagSemanticVersion = SemanticVersion.of(previousTag)
+
+        // Exploring commits to guess next version
+        def isMajor = false
+        def isMinor = false
+        def isRevision = false
+
+        commits.each { commit ->
+            if ("fix".equalsIgnoreCase(commit["type"].toString())) {
+                isRevision = true
+            } else if ("feat".equalsIgnoreCase(commit["type"].toString())) {
+                isMinor = true
+            } else if ("breaking".equalsIgnoreCase(commit["type"].toString())) {
+                isMajor = true
+            }
+        }
+
+        if (isMajor) {
+            return previousTagSemanticVersion.withBumpedMajor().toString()
+        } else if (isMinor) {
+            return previousTagSemanticVersion.withBumpedMinor().toString()
+        } else if (isRevision) {
+            return previousTagSemanticVersion.withBumpedRevision().toString()
         }
     }
 
