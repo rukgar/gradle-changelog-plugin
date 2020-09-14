@@ -1,4 +1,16 @@
-<a name="v0.3.0"></a>
+<a name="v0.3.1"></a>
+# v0.3.1 "Fatalist Zebra" (2020/09/14)
+
+
+## Documentation
+
+* **readme:** Update readme to reflect changes ([f94c86fe](https://github.com/ggranum/gradle-changelog-plugin/commits/f94c86fe))
+
+## Features
+
+* **build:** Release to Gradle Plugin Repository ([67d43100](https://github.com/ggranum/gradle-changelog-plugin/commits/67d43100))
+
+
 ## v0.3.0 "Broken Narwhal" (2020/09/14)
 
 

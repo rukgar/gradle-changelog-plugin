@@ -96,7 +96,7 @@ changelog {
     versionNum "v$project.version"
     versionText "Fatalist Zebra"
     repoUrl "https://github.com/ggranum/gradle-changelog-plugin"
-    match "^fix|^feat|^fix|^perf|^refactor|BREAKING"
-    from "0.3.0"
+    match "^fix|^feat|^doc|^perf|^refactor|BREAKING"
+    //from "0.3.0"
     //to "HEAD"
 }
