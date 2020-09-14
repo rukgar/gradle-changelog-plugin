@@ -1,1 +1,6 @@
-rootProject.name = 'git-changelog'
+pluginManagement {
+    repositories {
+        mavenLocal()
+    }
+}
+rootProject.name = 'gradle-conventional-changelog'

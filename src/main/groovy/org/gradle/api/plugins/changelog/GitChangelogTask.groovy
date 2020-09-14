@@ -4,10 +4,9 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 
 class GitChangelogTask extends DefaultTask {
-    def service
     @TaskAction
     def changelog() {
-        service = new GitChangelogService(project)
+        def service = new GitChangelogService(project)
 
         def commits
         def opts = [:]

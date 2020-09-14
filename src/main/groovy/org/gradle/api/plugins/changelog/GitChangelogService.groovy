@@ -83,7 +83,7 @@ class GitChangelogService {
             List<String> issues = match[0][1].split(",")
             if(issues.size()>0){
                 issues.each {issue -> msg.closes.push(issue.trim())}
-            }else{
+            } else{
                 msg.closes.push(match[0][1])
             }
             println("returning ${match[0][0]}")

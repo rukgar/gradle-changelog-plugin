@@ -1,33 +1,46 @@
 buildscript {
     repositories {
-        [
-                '../repo'
-        ].each { repo ->
-            maven { url repo }
-        }
-    }
-
-    dependencies {
-        classpath group: 'com.github.marcpoppleton', name: 'git-changelog', version: '0.2.0'
+        mavenLocal()
     }
 }
-apply plugin: 'maven'
-apply plugin: 'signing'
-apply plugin: 'groovy'
-apply plugin: 'maven-publish'
-apply plugin: 'changelog'
 
-group = 'com.github.marcpoppleton'
-version = '0.2.0'
+plugins {
+    id 'java-gradle-plugin'
+    id  'maven'
+    id 'signing'
+    id 'groovy'
+    id 'maven-publish'
+    // Comment out the following line prior to first build, then run 'publishToMavenLocal' task,
+    // then uncomment this line. Also see the 'changelog' task, below.
+    id 'com.geoffgranum.gradleconventionalplugin' version '0.3.0'
+}
+
+gradlePlugin {
+    plugins {
+        simplePlugin {
+            id = 'com.geoffgranum.gradleconventionalplugin'
+            implementationClass = 'org.gradle.api.plugins.changelog.GitChangelogPlugin'
+        }
+    }
+}
+
+group = 'com.geoffgranum'
+version = '0.3.0'
+
+wrapper {
+    distributionType = Wrapper.DistributionType.ALL
+    gradleVersion = "6.6.1"
+}
 
 repositories {
+    mavenLocal()
     mavenCentral()
 }
 
 dependencies {
     compile gradleApi()
     compile localGroovy()
-    testCompile "org.spockframework:spock-core:0.7-groovy-1.8"
+    testCompile group: 'org.spockframework', name: 'spock-core', version: '1.3-groovy-2.5'
 }
 
 test {
@@ -38,9 +51,9 @@ test {
 
 jar {
     manifest {
-        attributes 'Implementation-Title': 'Gradle Changelog plugin',
-                'Implementation-Version': version,
-                'Built-By': 'Marc Poppleton',
+        attributes 'Implementation-Title': 'Conventional Changelog For Gradle',
+                'Implementation-Version': project.version,
+                'Built-By': 'Geoff Granum',
                 'Built-Date': new Date(),
                 'Built-JDK': System.getProperty('java.version'),
                 'Built-Gradle': gradle.gradleVersion
@@ -58,7 +71,7 @@ task groovydocJar(type: Jar, dependsOn: groovydoc) {
 }
 
 task javadocJar(type: Jar, dependsOn:javadoc) {
-    classifier = 'javadoc'
+    classifier 'javadoc'
     from javadoc.destinationDir
 }
 
@@ -66,10 +79,6 @@ artifacts {
     archives sourcesJar
     archives groovydocJar
     archives javadocJar
-}
-
-signing {
-    sign configurations.archives
 }
 
 publishing {
@@ -91,78 +100,23 @@ publishing {
                 license.appendNode('distribution', 'repo')
 
                 def developers = root.appendNode('developers')
-                def marcpoppleton = developers.appendNode('developer')
-                marcpoppleton.appendNode('id', 'marcpoppleton')
-                marcpoppleton.appendNode('name', 'Marc Poppleton')
-                marcpoppleton.appendNode('email', 'marc.poppleton@gmail.com')
-            }
-        }
-        repositories {
-            maven {
-                url "../repo"
-            }
-
-        }
-    }
-}
-
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-
-            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-                authentication(userName: ossrhUsername, password: ossrhPassword)
-            }
-
-            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-                authentication(userName: ossrhUsername, password: ossrhPassword)
-            }
-
-            pom.project {
-                name 'Gradle Changelog plugin'
-                packaging 'jar'
-                // optionally artifactId can be defined here
-                description 'Gradle plugin for generating changelog from commit logs. Forked from Andres Araujos plugin'
-                url 'https://github.com/marcpoppleton/gradle-changelog-plugin'
-
-                scm {
-                    connection 'scm:git:https://github.com/marcpoppleton/gradle-changelog-plugin.git'
-                    developerConnection 'scm:git:https://github.com/marcpoppleton/gradle-changelog-plugin.git'
-                    url 'https://github.com/marcpoppleton/gradle-changelog-plugin.git'
-                }
-
-                licenses {
-                    license {
-                        name 'The Apache License, Version 2.0'
-                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                    }
-                }
-
-                developers {
-                    developer {
-                        id 'marcpoppleton'
-                        name 'Marc Poppleton'
-                        email 'marc.poppleton@gmail.com'
-                    }
-                }
+                def dev = developers.appendNode('developer')
+                dev.appendNode('id', 'geoffgranum')
+                dev.appendNode('name', 'Geoff Granum')
+                dev.appendNode('email', 'Geoff.granum@gmail.com')
             }
         }
     }
 }
 
-
+// Comment out the following task prior to first build, then run 'publishToMavenLocal' task, then uncomment.
 changelog {
     file "CHANGELOG.md"
     versionNum "v$project.version"
-    versionText "Electric Lama"
-    repoUrl "https://github.com/marcpoppleton/gradle-changelog-plugin"
+    versionText "Broken Narwhal"
+    repoUrl "https://github.com/ggranum/gradle-changelog-plugin"
     match "^fix|^feat|^fix|^perf|^refactor|BREAKING"
 
 //    from "0.1.0"
     //to "HEAD"
-}
-
-task wrapper(type: Wrapper) {
-    gradleVersion = '1.12'
 }
