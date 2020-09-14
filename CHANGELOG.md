@@ -1,3 +1,29 @@
+<a name="v0.3.0"></a>
+## v0.3.0 "Broken Narwhal" (2020/09/14)
+
+
+## Bug Fixes
+
+* **windowsOS:** fix java.lang.string not found exception ([6bd6438b](https://github.com/ggranum/gradle-changelog-plugin/commits/6bd6438b))
+* line return after each commit in sections without commit links printed ([1a9b1942](https://github.com/ggranum/gradle-changelog-plugin/commits/1a9b1942))
+* issues ref can be in a oneliner commit message. Several issues can be closed in one message. Supports wider closing wording ([007bb752](https://github.com/ggranum/gradle-changelog-plugin/commits/007bb752))
+* **GitHubService:** project obj should be passed to service ([cd0b3647](https://github.com/ggranum/gradle-changelog-plugin/commits/cd0b3647))
+
+## Features
+
+* **build:**
+  * add self changelog plugin ([ab8505ca](https://github.com/ggranum/gradle-changelog-plugin/commits/ab8505ca))
+  * Add support for Gradle 6+ ([a206f89a](https://github.com/ggranum/gradle-changelog-plugin/commits/a206f89a))
+* added support of version name with param subtitle ([572d0dd7](https://github.com/ggranum/gradle-changelog-plugin/commits/572d0dd7))
+* can append or overwrite existing changelog file. Default appends ([517bbc70](https://github.com/ggranum/gradle-changelog-plugin/commits/517bbc70))
+* Improves previous tag detection by searching latest tagged commit across all branches. New logic for guessing next version using conventional commits tags present. ([9ce3e04d](https://github.com/ggranum/gradle-changelog-plugin/commits/9ce3e04d))
+* **regexp:** add the refactor tag to the default filter regexp ([e9f2e37f](https://github.com/ggranum/gradle-changelog-plugin/commits/e9f2e37f))
+
+## Refactor
+
+* etracted string templates out methods
+* move regexp for isolating fixes in a method
+* **GitChangelogTask:** separate logic ina service and add unit tests
 <a name="v0.2.0"></a>
 ## v0.2.0 (2019/04/18)
 
