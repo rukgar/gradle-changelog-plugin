@@ -1,8 +1,8 @@
 package org.gradle.api.plugins.changelog
 
 class GitChangelogService {
-    def GIT_LOG_CMD = 'git log --grep="%s" -E --format=%s %s..%s'
-    def GIT_NOTAG_LOG_CMD = 'git log --grep="%s" -E --format=%s'
+    def GIT_LOG_CMD = 'git log --grep="%s" -i -E --format=%s %s..%s'
+    def GIT_NOTAG_LOG_CMD = 'git log --grep="%s" -i -E --format=%s'
     def GIT_TAG_CMD = 'git describe --tags %s'
     def GIT_REV_TAG_CMD = 'git rev-list --tags --max-count=1'
     def EMPTY_COMPONENT = '$$'
@@ -14,10 +14,11 @@ class GitChangelogService {
     static def titleTemplate = '\n## <%= title %>\n\n'
     static def headerTemplate = '<a name="<%= version %>"></a>\\n<%= versionText %> (<%= date %>)\n\n'
     static def componentTemplate = '* **<%= name %>:**'
+    static def listItemTemplate = '<%= prefix %> <%= commitSubject %> (<%= commitLink %><%= closes ? (", closes " + closes) : "" %>)\n'
+
     static def versionTemplate = '## <%= version %><%= subtitle ? (" " + subtitle) : "" %>'
-    static
-    def listItemTemplate = '<%= prefix %> <%= commitSubject %> (<%= commitLink %><%= closes ? (", closes " + closes) : "" %>)\n'
     static def patchVersionTemplate = '# <%= version %><%= subtitle ? (" " + subtitle) : "" %>'
+
     static def issueTemplate = '${repository ? "[#$issue]($repository/issues/$issue)" : "#$issue"}'
     static def commitTemplate = '${repository ? "[$commit]($repository/commits/$commit)" : "#$commit"}'
 
@@ -25,7 +26,7 @@ class GitChangelogService {
         this.project = project
     }
 
-    static def LinkedHashMap parseRawCommit(String raw) {
+    static LinkedHashMap parseRawCommit(String raw) {
         if (raw == null || raw.empty) {
             return null
         }
@@ -74,7 +75,7 @@ class GitChangelogService {
         return msg;
     }
 
-    static def String readCloses(String line, msg){
+    static String readCloses(String line, msg){
         def match
         match = line =~ /(?:Closes|Fixes|Resolves|closes|fixes|resolves)\s((?:#\d+(?:\,\s)?)+)/
         if (match) {
@@ -92,7 +93,7 @@ class GitChangelogService {
         return null
     }
 
-    def ArrayList readGitLog(grep, from = null, to = null) {
+    ArrayList readGitLog(grep, from = null, to = null) {
         def cmd
         if (from) {
             cmd = String.format(GIT_LOG_CMD, grep, '%H%n%s%n%b%n==END==', from, to).split(" ")
@@ -313,7 +314,7 @@ class GitChangelogService {
         }
     }
 
-    static def String linkToCommit(String hash, Map opts) {
+    static String linkToCommit(String hash, Map opts) {
         def binding = [
                 "commit"    : hash.substring(0, 8),
                 "repository": opts.repoUrl
@@ -321,7 +322,7 @@ class GitChangelogService {
         return engine.createTemplate(commitTemplate).make(binding).toString()
     }
 
-    static def String linkToIssue(issue, Map opts) {
+    static String linkToIssue(issue, Map opts) {
         def binding = [
                 "issue"     : issue.replaceAll('#',''),
                 "repository": opts.trackerUrl ? opts.trackerUrl : opts.repoUrl
@@ -329,12 +330,12 @@ class GitChangelogService {
         return engine.createTemplate(issueTemplate).make(binding).toString()
     }
 
-    static def String currentDate() {
+    static String currentDate() {
         def c = new GregorianCalendar()
-        return String.format('%tY/%<tm/%<td', c)
+        return String.format('%tY-%<tm-%<td', c)
     }
 
-    static def String versionText(String version, String subtitle) {
+    static String versionText(String version, String subtitle) {
         def isMajor = version.tokenize('.')[2] == '0';
         def binding = [
                 "version" : version,
