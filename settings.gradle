@@ -1,6 +1,9 @@
 pluginManagement {
     repositories {
+        jcenter()
         mavenLocal()
+        gradlePluginPortal()
+
     }
 }
 rootProject.name = 'gradle-conventional-changelog'
