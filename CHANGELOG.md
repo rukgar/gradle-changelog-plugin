@@ -1,3 +1,10 @@
+<a name="v0.3.2"></a>
+# v0.3.2 "Awesome Iguana" (2021/07/22)
+
+
+## Features
+
+* **issueTracking:** Support other issue trackers (#1) ([333a5a1e](https://github.com/ggranum/gradle-changelog-plugin/commits/333a5a1e))
 <a name="v0.3.1"></a>
 # v0.3.1 "Fatalist Zebra" (2020/09/14)
 
