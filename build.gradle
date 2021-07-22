@@ -5,7 +5,7 @@ plugins {
     id 'maven-publish'
     // Comment out the following line prior to first build, then run 'publishToMavenLocal' task,
     // then uncomment this line. Also see the 'changelog' task, below.
-    id 'com.geoffgranum.gradle-conventional-changelog' version '0.3.1'
+    id 'com.kargath.gradle-conventional-changelog' version '0.3.2'
 }
 
 wrapper {
@@ -24,11 +24,11 @@ repositories {
 
 project.ext.pluginId = rootProject['project.pluginId']
 version = rootProject['project.version']
-group = 'com.geoffgranum'
+group = 'com.kargath'
 
 pluginBundle {
-    website = 'https://github.com/ggranum/gradle-changelog-plugin/'
-    vcsUrl = 'https://github.com/ggranum/gradle-changelog-plugin/'
+    website = 'https://github.com/kargath/gradle-changelog-plugin/'
+    vcsUrl = 'https://github.com/kargath/gradle-changelog-plugin/'
     tags = ['conventional changelog', 'git']
 }
 
@@ -60,7 +60,7 @@ jar {
     manifest {
         attributes 'Implementation-Title': 'Conventional Changelog For Gradle',
                 'Implementation-Version': project.version,
-                'Built-By': 'Geoff Granum',
+                'Built-By': 'David Campos',
                 'Built-Date': new Date(),
                 'Built-JDK': System.getProperty('java.version'),
                 'Built-Gradle': gradle.gradleVersion
@@ -94,7 +94,7 @@ publishing {
 changelog {
     file "CHANGELOG.md"
     versionNum "v$project.version"
-    versionText "Fatalist Zebra"
+    versionText "Awesome Iguana"
     repoUrl "https://github.com/ggranum/gradle-changelog-plugin"
     match "^fix|^feat|^doc|^perf|^refactor|BREAKING"
     //from "0.3.0"
