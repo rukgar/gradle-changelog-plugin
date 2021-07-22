@@ -1,5 +1,7 @@
 package org.gradle.api.plugins.changelog
 
+import org.gradle.api.plugins.changelog.trackers.SupportedIssueTrackersDelegate
+
 class GitChangelogService {
     def GIT_LOG_CMD = 'git log --grep="%s" -E --format=%s %s..%s'
     def GIT_NOTAG_LOG_CMD = 'git log --grep="%s" -E --format=%s'
@@ -11,6 +13,7 @@ class GitChangelogService {
     def previousTag
     def previousTagRevision
 
+    static def issueTrackerDelegate = new SupportedIssueTrackersDelegate()
     static def titleTemplate = '\n## <%= title %>\n\n'
     static def headerTemplate = '<a name="<%= version %>"></a>\\n<%= versionText %> (<%= date %>)\n\n'
     static def componentTemplate = '* **<%= name %>:**'
@@ -18,7 +21,7 @@ class GitChangelogService {
     static
     def listItemTemplate = '<%= prefix %> <%= commitSubject %> (<%= commitLink %><%= closes ? (", closes " + closes) : "" %>)\n'
     static def patchVersionTemplate = '# <%= version %><%= subtitle ? (" " + subtitle) : "" %>'
-    static def issueTemplate = '${repository ? "[#$issue]($repository/issues/$issue)" : "#$issue"}'
+    static def issueTemplate = '${repository ? "[#$issue]($repository/$path/$issue)" : "#$issue"}'
     static def commitTemplate = '${repository ? "[$commit]($repository/commits/$commit)" : "#$commit"}'
 
     GitChangelogService(project) {
@@ -76,7 +79,8 @@ class GitChangelogService {
 
     static def String readCloses(String line, msg){
         def match
-        match = line =~ /(?:Closes|Fixes|Resolves|closes|fixes|resolves)\s((?:#\d+(?:\,\s)?)+)/
+        def issueMatcher = issueTrackerDelegate.buildIssueNumberRegex()
+        match = line =~ /(?:Closes|Fixes|Resolves|closes|fixes|resolves)\s((?:#(?:${issueMatcher})(?:\,\s)?)+)/
         if (match) {
             println("match is ${match}")
             match[0] - match[0][1]
@@ -322,8 +326,10 @@ class GitChangelogService {
     }
 
     static def String linkToIssue(issue, Map opts) {
+        String issueNumber = issue.replaceAll('#','')
         def binding = [
-                "issue"     : issue.replaceAll('#',''),
+                "issue"     : issueNumber,
+                "path"      : issueTrackerDelegate.getIssueUrlPath(issueNumber),
                 "repository": opts.trackerUrl ? opts.trackerUrl : opts.repoUrl
         ]
         return engine.createTemplate(issueTemplate).make(binding).toString()
