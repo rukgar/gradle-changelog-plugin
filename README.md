@@ -13,7 +13,7 @@ Apply the `changelog` plugin to your plugins block
 
 ```groovy
 plugins {
-    id 'com.kargath.gradle-conventional-changelog' version '0.3.1'
+    id 'com.github.rukgar.gradle-conventional-changelog' version '0.3.2'
 }
 ```
 
