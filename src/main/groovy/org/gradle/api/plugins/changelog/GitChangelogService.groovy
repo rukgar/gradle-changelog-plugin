@@ -80,7 +80,7 @@ class GitChangelogService {
     static def String readCloses(String line, msg){
         def match
         def issueMatcher = issueTrackerDelegate.buildIssueNumberRegex()
-        match = line =~ /(?:Closes|Fixes|Resolves|closes|fixes|resolves)\s((?:#(?:${issueMatcher})(?:\,\s)?)+)/
+        match = line =~ /(?:Closes|Fixes|Resolves|closes|fixes|resolves)[^#]*((?:#(?:${issueMatcher})(?:\,\s)?)+)/
         if (match) {
             println("match is ${match}")
             match[0] - match[0][1]
