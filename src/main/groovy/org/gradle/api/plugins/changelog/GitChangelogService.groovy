@@ -1,5 +1,7 @@
 package org.gradle.api.plugins.changelog
 
+import groovy.text.GStringTemplateEngine
+import org.gradle.api.plugins.changelog.exporters.ExporterTemplate
 import org.gradle.api.plugins.changelog.trackers.SupportedIssueTrackersDelegate
 
 class GitChangelogService {
@@ -13,22 +15,18 @@ class GitChangelogService {
     def previousTag
     def previousTagRevision
 
-    static def issueTrackerDelegate = new SupportedIssueTrackersDelegate()
-    static def titleTemplate = '\n## <%= title %>\n\n'
-    static def headerTemplate = '<a name="<%= version %>"></a>\\n<%= versionText %> (<%= date %>)\n\n'
-    static def componentTemplate = '* **<%= name %>:**'
-    static def versionTemplate = '## <%= version %><%= subtitle ? (" " + subtitle) : "" %>'
-    static
-    def listItemTemplate = '<%= prefix %> <%= commitSubject %> (<%= commitLink %><%= closes ? (", closes " + closes) : "" %>)\n'
-    static def patchVersionTemplate = '# <%= version %><%= subtitle ? (" " + subtitle) : "" %>'
-    static def issueTemplate = '${repository ? "[#$issue]($repository/$path/$issue)" : "#$issue"}'
-    static def commitTemplate = '${repository ? "[$commit]($repository/commits/$commit)" : "#$commit"}'
+    def issueTrackerDelegate
+    ExporterTemplate exporterTemplate
 
-    GitChangelogService(project) {
+    static def engine = new GStringTemplateEngine()
+
+    GitChangelogService(project, exporterTemplate) {
         this.project = project
+        this.exporterTemplate = exporterTemplate
+        this.issueTrackerDelegate = new SupportedIssueTrackersDelegate()
     }
 
-    static def LinkedHashMap parseRawCommit(String raw) {
+    def LinkedHashMap parseRawCommit(String raw) {
         if (raw == null || raw.empty) {
             return null
         }
@@ -77,7 +75,7 @@ class GitChangelogService {
         return msg;
     }
 
-    static def String readCloses(String line, msg){
+    def String readCloses(String line, msg){
         def match
         def issueMatcher = issueTrackerDelegate.buildIssueNumberRegex()
         match = line =~ /(?:Closes|Fixes|Resolves|closes|fixes|resolves)\s((?:#(?:${issueMatcher})(?:\,\s)?)+)/
@@ -107,12 +105,12 @@ class GitChangelogService {
         println "DEBUG(cmd): ${cmd.join(" ")}"
         def res = project.exec {
             if (System.properties['os.name'].toLowerCase().contains('windows')) {
-                commandLine 'cmd', '/c', "${cmd.join(" ")}"
+                it.commandLine 'cmd', '/c', "${cmd.join(" ")}"
             } else {
-                commandLine cmd
+                it.commandLine cmd
             }
 
-            standardOutput out
+            it.standardOutput out
         }
         def arr = out.toString().split("\n==END==\n");
 
@@ -136,15 +134,15 @@ class GitChangelogService {
         def outError = new ByteArrayOutputStream()
 
         project.exec {
-            ignoreExitValue true
+            it.ignoreExitValue true
             if (System.properties['os.name'].toLowerCase().contains('windows')) {
-                commandLine 'cmd', '/c',  "${cmd.join(" ")}"
+                it.commandLine 'cmd', '/c',  "${cmd.join(" ")}"
             } else {
-                commandLine cmd
+                it.commandLine cmd
             }
 
-            standardOutput out
-            errorOutput outError
+            it.standardOutput out
+            it.errorOutput outError
         }
         if (!outError.toString().replace("\n", "").isEmpty()) {
             println "Cannot get the previous tag: " + outError.toString()
@@ -164,15 +162,15 @@ class GitChangelogService {
         def outError = new ByteArrayOutputStream()
 
         project.exec {
-            ignoreExitValue true
+            it.ignoreExitValue true
             if (System.properties['os.name'].toLowerCase().contains('windows')) {
-                commandLine 'cmd', '/c', "${cmd.join(" ")}"
+                it.commandLine 'cmd', '/c', "${cmd.join(" ")}"
             } else {
-                commandLine cmd
+                it.commandLine cmd
             }
 
-            standardOutput out
-            errorOutput outError
+            it.standardOutput out
+            it.errorOutput outError
         }
         if (!outError.toString().replace("\n", "").isEmpty()) {
             println "Cannot get the previous tag revision: " + outError.toString()
@@ -223,9 +221,8 @@ class GitChangelogService {
                 "date"       : currentDate(),
                 "versionText": versionText(opts.version, opts.versionText)
         ]
-        def template = engine.createTemplate(headerTemplate).make(binding)
 
-        fw.write(template.toString().bytes)
+        writeTemplate(fw, exporterTemplate.headerTemplate(), binding)
         printSection(opts, fw, 'Documentation', sections.docs)
         printSection(opts, fw, 'Bug Fixes', sections.fix)
         printSection(opts, fw, 'Features', sections.feat)
@@ -236,12 +233,19 @@ class GitChangelogService {
         printSection(opts, fw, 'Chore', sections.chore, false)
         printSection(opts, fw, 'Breaking Changes', sections.breaks, false)
         printSection(opts, fw, 'Docs', sections.docs, false)
+        writeTemplate(fw, exporterTemplate.footerTemplate())
 
         fw.write(b)
         fw.close()
     }
 
-    static def engine = new groovy.text.GStringTemplateEngine()
+    static def writeTemplate(def fw, String template, Map bindings = [:]) {
+        fw.write(getTemplate(template, bindings))
+    }
+
+    static def getTemplate(String template, Map bindings = [:]) {
+        return engine.createTemplate(template).make(bindings).toString().bytes
+    }
 
     def printSection(Map opts, RandomAccessFile fw, String title, Map section, boolean printCommitLinks = true) {
 
@@ -249,7 +253,7 @@ class GitChangelogService {
         section.sort()
 
         def binding = ["title": title]
-        def template = engine.createTemplate(titleTemplate).make(binding)
+        def template = engine.createTemplate(exporterTemplate.titleTemplate()).make(binding)
 
         fw.write(template.toString().bytes)
 
@@ -259,7 +263,7 @@ class GitChangelogService {
 
             if (c.key != EMPTY_COMPONENT) {
                 binding = ["name": c.key]
-                def componentText = engine.createTemplate(componentTemplate).make(binding)
+                def componentText = engine.createTemplate(exporterTemplate.componentTemplate()).make(binding)
                 if (nested) {
                     fw.write((componentText.toString() + '\n').bytes)
                     prefix = '  *'
@@ -277,7 +281,7 @@ class GitChangelogService {
                             "commitLink"   : linkToCommit(commit.hash, opts),
                             "closes"       : commit.closes.collect { linkToIssue(it, opts) }.join(", ")
                     ]
-                    def commitText = engine.createTemplate(listItemTemplate).make(binding)
+                    def commitText = engine.createTemplate(exporterTemplate.listItemTemplate()).make(binding)
                     fw.write(commitText.toString().bytes)
                 } else {
                     fw.write(String.format("%s %s\n", prefix, commit.subject).bytes)
@@ -317,22 +321,22 @@ class GitChangelogService {
         }
     }
 
-    static def String linkToCommit(String hash, Map opts) {
+    def String linkToCommit(String hash, Map opts) {
         def binding = [
                 "commit"    : hash.substring(0, 8),
                 "repository": opts.repoUrl
         ]
-        return engine.createTemplate(commitTemplate).make(binding).toString()
+        return engine.createTemplate(exporterTemplate.commitTemplate()).make(binding).toString()
     }
 
-    static def String linkToIssue(issue, Map opts) {
+    def String linkToIssue(issue, Map opts) {
         String issueNumber = issue.replaceAll('#','')
         def binding = [
                 "issue"     : issueNumber,
                 "path"      : issueTrackerDelegate.getIssueUrlPath(issueNumber),
                 "repository": opts.trackerUrl ? opts.trackerUrl : opts.repoUrl
         ]
-        return engine.createTemplate(issueTemplate).make(binding).toString()
+        return engine.createTemplate(exporterTemplate.issueTemplate()).make(binding).toString()
     }
 
     static def String currentDate() {
@@ -340,16 +344,16 @@ class GitChangelogService {
         return String.format('%tY/%<tm/%<td', c)
     }
 
-    static def String versionText(String version, String subtitle) {
+    def String versionText(String version, String subtitle) {
         def isMajor = version.tokenize('.')[2] == '0';
         def binding = [
                 "version" : version,
                 "subtitle": subtitle
         ]
         if (isMajor) {
-            return engine.createTemplate(versionTemplate).make(binding).toString()
+            return engine.createTemplate(exporterTemplate.versionTemplate()).make(binding).toString()
         } else {
-            return engine.createTemplate(patchVersionTemplate).make(binding).toString()
+            return engine.createTemplate(exporterTemplate.patchVersionTemplate()).make(binding).toString()
         }
     }
 }

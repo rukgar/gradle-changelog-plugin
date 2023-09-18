@@ -2,6 +2,8 @@ package org.gradle.api.plugins.changelog
 
 import org.gradle.api.Project
 import org.gradle.api.Plugin
+import org.gradle.api.plugins.changelog.tasks.GitChangelogTask
+import org.gradle.api.plugins.changelog.tasks.SlackChangelogTask
 
 
 class ChangelogPluginExtension {
@@ -21,5 +23,6 @@ class GitChangelogPlugin implements Plugin<Project> {
     void apply(Project project) {
         def extension = project.extensions.create('changelog', ChangelogPluginExtension)
         project.task('changelog', type: GitChangelogTask)
+        project.task('changelogSlack', type: SlackChangelogTask)
     }
 }

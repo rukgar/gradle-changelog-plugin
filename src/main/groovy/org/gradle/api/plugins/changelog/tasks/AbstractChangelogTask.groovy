@@ -1,17 +1,13 @@
-package org.gradle.api.plugins.changelog
+package org.gradle.api.plugins.changelog.tasks
 
 import org.gradle.api.DefaultTask
-import org.gradle.api.tasks.TaskAction
 
-class GitChangelogTask extends DefaultTask {
-    @TaskAction
-    def changelog() {
-        def service = new GitChangelogService(project)
-
+abstract class AbstractChangelogTask extends DefaultTask {
+    protected def executeChangelog(def service, def targetFile) {
         def commits
         def opts = [:]
 
-        opts.file           = project.changelog.file ? project.changelog.file : "CHANGELOG.md"
+        opts.file           = targetFile
         opts.appName        = project.changelog.appName ? project.changelog.appName : ""
         opts.grep           = project.changelog.match ? project.changelog.match : "^fix|^feat|^fix|^perf|^refactor|BREAKING"
         opts.repoUrl        = project.changelog.repoUrl ? project.changelog.repoUrl : ""
@@ -27,5 +23,4 @@ class GitChangelogTask extends DefaultTask {
         println "Generating changelog to ${opts.file} ( ${opts.version} )"
         service.writeChangelog(new RandomAccessFile(new File("$opts.file"), "rw"), commits, opts)
     }
-
 }
