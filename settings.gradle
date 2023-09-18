@@ -3,7 +3,11 @@ pluginManagement {
         jcenter()
         mavenLocal()
         gradlePluginPortal()
+    }
 
+    plugins {
+        id 'com.gradle.plugin-publish' version pluginPublishVersion
+        id 'com.github.rukgar.gradle-conventional-changelog' version changelogPluginVersion
     }
 }
 rootProject.name = 'gradle-conventional-changelog'
