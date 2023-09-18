@@ -1,11 +1,11 @@
 plugins {
     id 'groovy'
     id 'java-gradle-plugin'
-    id 'com.gradle.plugin-publish' version "$pluginPublishVersion"
+    id 'com.gradle.plugin-publish'
     id 'maven-publish'
     // Comment out the following line prior to first build, then run 'publishToMavenLocal' task,
     // then uncomment this line. Also see the 'changelog' task, below.
-    id 'com.github.rukgar.gradle-conventional-changelog' version "$changelogPluginVersion"
+    id 'com.github.rukgar.gradle-conventional-changelog'
 }
 
 wrapper {
