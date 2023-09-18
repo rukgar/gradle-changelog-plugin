@@ -16,9 +16,7 @@ wrapper {
 repositories {
     mavenLocal()
     jcenter()
-    maven {
-        url  "https://dl.bintray.com/ggranum/gradle-conventional-changelog"
-    }
+    mavenCentral()
 }
 
 
