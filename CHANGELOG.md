@@ -1,3 +1,10 @@
+<a name="v0.3.4"></a>
+# v0.3.4 "Lucky Bird" (2023/09/18)
+
+
+## Bug Fixes
+
+* support more closing formats (#1) ([e5b7ad4c](https://github.com/rukgar/gradle-changelog-plugin/commits/e5b7ad4c))
 <a name="v0.3.2"></a>
 # v0.3.2 "Awesome Iguana" (2021/07/22)
 

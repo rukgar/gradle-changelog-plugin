@@ -13,7 +13,7 @@ class GitChangelogTask extends DefaultTask {
 
         opts.file           = project.changelog.file ? project.changelog.file : "CHANGELOG.md"
         opts.appName        = project.changelog.appName ? project.changelog.appName : ""
-        opts.grep           = project.changelog.match ? project.changelog.match : "^fix|^feat|^fix|^perf|^refactor|BREAKING"
+        opts.grep           = project.changelog.match ? project.changelog.match : "|^fix|^feat|^perf|^refactor|BREAKING"
         opts.repoUrl        = project.changelog.repoUrl ? project.changelog.repoUrl : ""
         opts.trackerUrl     = project.changelog.trackerUrl ? project.changelog.trackerUrl : ""
         opts.from           = project.changelog.from ? project.changelog.from : service.getPreviousTag()
